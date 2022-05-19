@@ -17,8 +17,8 @@
 #define EXISTS std::filesystem::exists
 #endif
 
-GLint windowHeight = 640, windowWidth = 960;
-// GLint windowHeight = 1080, windowWidth = 1920;
+// GLint windowHeight = 640, windowWidth = 960;
+GLint windowHeight = 1080, windowWidth = 1920;
 
 // gnatidread.cpp is the CITS3003 "Graphics n Animation Tool Interface & Data
 // Reader" code.  This file contains parts of the code that you shouldn't need
@@ -340,7 +340,8 @@ void init(void)
     CheckError(); // Allocate texture objects
 
     // Load shaders and use the resulting shader program
-    shaderProgram = InitShader("res/shaders/vStart.glsl", "res/shaders/fStart.glsl");
+    shaderProgram = InitShader("res/shaders_a_f/vStart.glsl", "res/shaders_a_f/fStart.glsl");
+    // shaderProgram = InitShader("res/shaders_g_j/vStart.glsl", "res/shaders_g_j/fStart.glsl");
 
     glUseProgram(shaderProgram);
     CheckError();

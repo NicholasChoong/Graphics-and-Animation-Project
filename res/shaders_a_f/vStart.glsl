@@ -46,7 +46,15 @@ void main()
 
     // globalAmbient is independent of distance from the light source
     vec3 globalAmbient = vec3(0.1, 0.1, 0.1);
-    color.rgb = globalAmbient  + ambient + diffuse + specular;
+
+    // Part F: Light Reduction, values from https://learnopengl.com/Lighting/Light-casters when distance = 32
+    float Kc, Kl, Kq, dist, attenuation;
+    Kc = 1.0;
+    Kl = 0.14;
+    Kq = 0.07;
+    dist = length(Lvec);
+    attenuation = 1.0 / (Kc + Kl * dist + Kq * pow(dist, 2.0));
+    color.rgb = globalAmbient + (ambient + diffuse) * attenuation + specular;
     color.a = 1.0;
 
     gl_Position = Projection * ModelView * vpos;
