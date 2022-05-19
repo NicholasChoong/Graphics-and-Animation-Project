@@ -340,8 +340,8 @@ void init(void)
     CheckError(); // Allocate texture objects
 
     // Load shaders and use the resulting shader program
-    shaderProgram = InitShader("res/shaders_a_f/vStart.glsl", "res/shaders_a_f/fStart.glsl");
-    // shaderProgram = InitShader("res/shaders_g_j/vStart.glsl", "res/shaders_g_j/fStart.glsl");
+    // shaderProgram = InitShader("res/shaders_a_f/vStart.glsl", "res/shaders_a_f/fStart.glsl");
+    shaderProgram = InitShader("res/shaders_g_j/vStart.glsl", "res/shaders_g_j/fStart.glsl");
 
     glUseProgram(shaderProgram);
     CheckError();
