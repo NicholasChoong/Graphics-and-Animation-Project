@@ -41,7 +41,7 @@ void main()
     vec3  specular = Ks * SpecularProduct;
     
     if (dot(L, N) < 0.0 ) {
-	specular = vec3(0.0, 0.0, 0.0);
+	    specular = vec3(0.0, 0.0, 0.0);
     } 
 
     // globalAmbient is independent of distance from the light source
@@ -54,7 +54,7 @@ void main()
     Kq = 0.20;
     dist = length(Lvec);
     attenuation = 1.0 / (Kc + Kl * dist + Kq * pow(dist, 2.0));
-    color.rgb = globalAmbient + (ambient + diffuse) * attenuation + specular;
+    color.rgb = globalAmbient + (ambient + diffuse + specular) * attenuation;
     color.a = 1.0;
 
     gl_Position = Projection * ModelView * vpos;
