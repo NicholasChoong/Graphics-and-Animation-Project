@@ -337,6 +337,17 @@ static void deleteObject()
     sceneObjs[currObject] = emptyObj;
     nObjects--;
     toolObj = currObject = currObject > SPECIAL_OBJ ? nObjects - 1 : -1;
+    if (currObject >= SPECIAL_OBJ)
+    {
+        toolObj = currObject = nObjects - 1;
+        setToolCallbacks(adjustLocXZ, camRotZ(),
+                         adjustScaleY, mat2(0.05, 0.0, 0.0, 10.0));
+    }
+    else
+    {
+        toolObj = currObject = -1;
+        doRotate();
+    }
     glutPostRedisplay();
 }
 
@@ -351,10 +362,9 @@ static void duplicateObject()
         return;
     }
     sceneObjs[nObjects] = sceneObjs[currObject];
-    toolObj = currObject = nObjects;
-    nObjects++;
+    toolObj = currObject = nObjects++;
     setToolCallbacks(adjustLocXZ, camRotZ(),
-                     adjustScaleY, mat2(0.05, 0.0, 0.0, 10));
+                     adjustScaleY, mat2(0.05, 0.0, 0.0, 10.0));
     glutPostRedisplay();
 }
 
