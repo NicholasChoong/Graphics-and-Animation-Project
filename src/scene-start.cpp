@@ -81,6 +81,9 @@ int nObjects = 0;                  // How many objects are currenly in the scene
 int currObject = -1;               // The current object
 int toolObj = -1;                  // The object currently being modified
 
+// Part J11: Plane and the 2 light sources cannot be deleted
+static const int SPECIAL_OBJ = 3;
+
 //----------------------------------------------------------------------------
 //
 // Loads a texture by number, and binds it for later use.
@@ -285,6 +288,8 @@ static void doRotate()
 
 static void addObject(int id)
 {
+    if (nObjects >= maxObjects)
+        return;
 
     vec2 currPos = currMouseXYworld(camRotSidewaysDeg);
     sceneObjs[nObjects].loc[0] = currPos[0];
@@ -318,6 +323,20 @@ static void addObject(int id)
     setToolCallbacks(adjustLocXZ, camRotZ(),
                      adjustScaleY, mat2(0.05, 0, 0, 10.0));
     glutPostRedisplay();
+}
+
+// Part J12: Delete Object
+static void deleteObject()
+{
+    if (currObject < SPECIAL_OBJ)
+    {
+        printf("cannot delete");
+        return;
+    }
+    SceneObject emptyObj;
+    sceneObjs[currObject] = emptyObj;
+    nObjects--;
+    toolObj = currObject = currObject > SPECIAL_OBJ ? nObjects - 1 : -1;
 }
 
 //------The init function-----------------------------------------------------
@@ -650,6 +669,9 @@ static void adjustAngleZTexscale(vec2 az_ts)
 static void mainmenu(int id)
 {
     deactivateTool();
+    // Part J14: Delete object
+    if (id == 31 && currObject >= 0)
+        deleteObject();
     if (id == 41 && currObject >= 0)
     {
         toolObj = currObject;
@@ -689,6 +711,9 @@ static void makeMenu()
     glutCreateMenu(mainmenu);
     glutAddMenuEntry("Rotate/Move Camera", 50);
     glutAddSubMenu("Add object", objectId);
+
+    // Part J14: Add delete button to menu
+    glutAddMenuEntry("Delete object", 31);
     glutAddMenuEntry("Position/Scale", 41);
     glutAddMenuEntry("Rotation/Texture Scale", 55);
     glutAddSubMenu("Material", materialMenuId);
