@@ -337,6 +337,25 @@ static void deleteObject()
     sceneObjs[currObject] = emptyObj;
     nObjects--;
     toolObj = currObject = currObject > SPECIAL_OBJ ? nObjects - 1 : -1;
+    glutPostRedisplay();
+}
+
+// Part J21: Duplicate Object
+static void duplicateObject()
+{
+    if (nObjects >= maxObjects)
+        return;
+    if (currObject < SPECIAL_OBJ)
+    {
+        printf("cannot delete");
+        return;
+    }
+    sceneObjs[nObjects] = sceneObjs[currObject];
+    toolObj = currObject = nObjects;
+    nObjects++;
+    setToolCallbacks(adjustLocXZ, camRotZ(),
+                     adjustScaleY, mat2(0.05, 0.0, 0.0, 10));
+    glutPostRedisplay();
 }
 
 //------The init function-----------------------------------------------------
@@ -669,9 +688,15 @@ static void adjustAngleZTexscale(vec2 az_ts)
 static void mainmenu(int id)
 {
     deactivateTool();
+
     // Part J14: Delete object
-    if (id == 31 && currObject >= 0)
+    if (id == 30 && currObject >= 0)
         deleteObject();
+
+    // Part J22: Duplicate object
+    if (id == 31 && currObject >= 0)
+        duplicateObject();
+
     if (id == 41 && currObject >= 0)
     {
         toolObj = currObject;
@@ -713,7 +738,11 @@ static void makeMenu()
     glutAddSubMenu("Add object", objectId);
 
     // Part J14: Add delete button to menu
-    glutAddMenuEntry("Delete object", 31);
+    glutAddMenuEntry("Delete object", 30);
+
+    // Part J14: Add delete button to menu
+    glutAddMenuEntry("Duplicate object", 31);
+
     glutAddMenuEntry("Position/Scale", 41);
     glutAddMenuEntry("Rotation/Texture Scale", 55);
     glutAddSubMenu("Material", materialMenuId);
