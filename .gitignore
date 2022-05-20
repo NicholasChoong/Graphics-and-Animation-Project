@@ -2,6 +2,6 @@
 .vscode
 cmake-build*
 build*
-res/models-textures
+# res/models-textures
 assimp_log.txt
-start_scene*
+start-scene*
