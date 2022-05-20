@@ -19,6 +19,13 @@ uniform vec4 LightPosition1, LightPosition2;
 uniform vec3 LightRGB1, LightRGB2;
 uniform float LightBrightness1, LightBrightness2;
 
+// Part J34: Add 3rd Light
+uniform vec4 LightPosition3;
+uniform vec4 LightDirection3;
+uniform vec3 LightRGB3;
+uniform float LightBrightness3;
+uniform float LightCutOff;
+
 void main()
 {
     // Part G4: Light per Fragment
@@ -46,10 +53,12 @@ void main()
     
     if (dot(L1, N) < 0.0 ) {
 	    specular1 = vec3(0.0, 0.0, 0.0);
-    } 
+    }
 
-    // Part I5: Light 2
-    vec3 L2 = normalize( LightPosition2.xyz );   // Direction to the light source
+    // Part I5: Light 2 
+    vec3 Lvec2 = LightPosition2.xyz - position;
+
+    vec3 L2 = normalize( Lvec2 );   // Direction to the light source
     vec3 H2 = normalize( L2 + E );  // Halfway vector
     
     // Compute terms in the illumination equation
@@ -63,7 +72,36 @@ void main()
     
     if (dot(L2, N) < 0.0 ) {
 	    specular2 = vec3(0.0, 0.0, 0.0);
-    } 
+    }
+
+    // Part J34: Add 3rd Light
+    vec3 Lvec3 = LightPosition3.xyz - position;
+
+    vec3 L3 = normalize( Lvec3 );   // Direction to the light source
+    vec3 H3 = normalize( L3 + E );  // Halfway vector
+    vec3 S3 = normalize( LightDirection3.xyz ); // Direction from spotlight
+    
+    vec3 ambient3, diffuse3, specular3;
+    
+    float theta = dot(L3, S3);
+    if (theta > LightCutOff){
+        // Compute terms in the illumination equation
+        ambient3 = AmbientProduct * LightRGB3 * LightBrightness3;
+
+        float Kd3 = max( dot(L3, N), 0.0 );
+        diffuse3 = Kd3 * DiffuseProduct * LightRGB3 * LightBrightness3;
+
+        float Ks3 = pow( max(dot(N, H3), 0.0), Shininess );
+        specular3 = Ks3 * SpecularProduct * LightRGB3 * LightBrightness3;
+        
+        if (dot(L3, N) < 0.0 ) {
+            specular3 = vec3(0.0, 0.0, 0.0);
+        }
+    } else {
+        ambient3 = vec3(0.0, 0.0, 0.0);
+        diffuse3 = vec3(0.0, 0.0, 0.0);
+        specular3 = vec3(0.0, 0.0, 0.0);
+    }
 
     // globalAmbient is independent of distance from the light source
     vec3 globalAmbient = vec3(0.1, 0.1, 0.1);
@@ -76,15 +114,28 @@ void main()
     dist = length(Lvec);
     attenuation = 1.0 / (Kc + Kl * dist + Kq * pow(dist, 2.0));
 
+    // Testing spotlight
+    // ambient1 = vec3(0.0, 0.0, 0.0);
+    // diffuse1 = vec3(0.0, 0.0, 0.0);
+    // specular1 = vec3(0.0, 0.0, 0.0);
+    // ambient2 = vec3(0.0, 0.0, 0.0);
+    // diffuse2 = vec3(0.0, 0.0, 0.0);
+    // specular2 = vec3(0.0, 0.0, 0.0);
+
     // Part H1: Specualar Separation
     // Part I6: Light 2
+    // Part J35: Add 3rd Light
     color.rgb = globalAmbient + (ambient1 + diffuse1) * attenuation
-                   + ambient2 + diffuse2;
+                   + ambient2 + diffuse2
+                   + ambient3 + diffuse3;
     color.a = 1.0;
 
     // Part H2: Specualar Separation
     // Part I7: Light 2
+    // Part J36: Add 3rd Light
     // Texture Scaling
     gl_FragColor = color * texture2D( texture, texCoord * texScale )
-                      + vec4(specular1 * attenuation + specular2, 1.0);
+                      + vec4(specular1 * attenuation
+                      + specular2
+                      + specular3, 1.0);
 }

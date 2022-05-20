@@ -82,7 +82,8 @@ int currObject = -1;               // The current object
 int toolObj = -1;                  // The object currently being modified
 
 // Part J11: Plane and the 2 light sources cannot be deleted
-static const int SPECIAL_OBJ = 3;
+// Part J31: Add 3rd Light
+static const int SPECIAL_OBJ = 4;
 
 //----------------------------------------------------------------------------
 //
@@ -315,8 +316,7 @@ static void addObject(int id)
     sceneObjs[nObjects].angles[2] = 0.0;
 
     sceneObjs[nObjects].meshId = id;
-    // sceneObjs[nObjects].texId = rand() % numTextures;
-    sceneObjs[nObjects].texId = 0;
+    sceneObjs[nObjects].texId = rand() % numTextures;
     sceneObjs[nObjects].texScale = 2.0;
 
     toolObj = currObject = nObjects++;
@@ -428,8 +428,14 @@ void init(void)
     sceneObjs[2].texId = 0;        // Plain texture
     sceneObjs[2].brightness = 0.2; // The light's brightness is 5 times this (below).
 
-    // addObject(rand() % numMeshes); // A test mesh
-    addObject(28); // A test mesh
+    // Part J32: Add 3rd Light
+    addObject(55); // Sphere for the first light
+    sceneObjs[3].loc = vec4(-2.0, 1.0, -1.0, 1.0);
+    sceneObjs[3].scale = 0.1;
+    sceneObjs[3].texId = 0;        // Plain texture
+    sceneObjs[3].brightness = 0.2; // The light's brightness is 5 times this (below).
+
+    addObject(rand() % numMeshes); // A test mesh
 
     // We need to enable the depth test to discard fragments that
     // are behind previously drawn fragments for the same pixel.
@@ -463,7 +469,7 @@ void drawMesh(SceneObject sceneObj)
     // in the sceneObj structure (see near the top of the program).
 
     // Part B1: Object Rotate XYZ
-    mat4 rotateXYZ = RotateX(-sceneObj.angles[0]) * RotateY(sceneObj.angles[1]) * RotateZ(-sceneObj.angles[2]);
+    mat4 rotateXYZ = RotateZ(sceneObj.angles[2]) * RotateY(sceneObj.angles[1]) * RotateX(sceneObj.angles[0]);
     mat4 model = Translate(sceneObj.loc) * rotateXYZ * Scale(sceneObj.scale);
 
     // Set the model-view matrix for the shaders
@@ -507,6 +513,9 @@ void display(void)
                  1, lightPosition);
     CheckError();
 
+    glUniform3fv(glGetUniformLocation(shaderProgram, "LightRGB1"), 1, lightObj1.rgb);
+    glUniform1f(glGetUniformLocation(shaderProgram, "LightBrightness1"), lightObj1.brightness);
+
     // Part I1: Light 2
     SceneObject lightObj2 = sceneObjs[2];
     vec4 lightPosition2 = view * lightObj2.loc;
@@ -514,11 +523,24 @@ void display(void)
                  1, lightPosition2);
     CheckError();
 
-    glUniform3fv(glGetUniformLocation(shaderProgram, "LightRGB1"), 1, lightObj1.rgb);
-    glUniform1f(glGetUniformLocation(shaderProgram, "LightBrightness1"), lightObj1.brightness);
-
     glUniform3fv(glGetUniformLocation(shaderProgram, "LightRGB2"), 1, lightObj2.rgb);
     glUniform1f(glGetUniformLocation(shaderProgram, "LightBrightness2"), lightObj2.brightness);
+
+    // Part J33: Add 3rd Light
+    SceneObject lightObj3 = sceneObjs[3];
+    vec4 lightPosition3 = view * lightObj3.loc;
+    glUniform4fv(glGetUniformLocation(shaderProgram, "LightPosition3"),
+                 1, lightPosition3);
+    CheckError();
+    vec4 lightDirection3 = view * RotateZ(sceneObjs[3].angles[2]) * RotateY(sceneObjs[3].angles[1]) * RotateX(sceneObjs[3].angles[0]) * vec4(0.0, 1.0, 0.0, 0.0);
+    // vec4 lightDirection3 = view * vec4(0.2f, 1.0f, 0.3f, 0.0f);
+    glUniform4fv(glGetUniformLocation(shaderProgram, "LightDirection3"),
+                 1, lightDirection3);
+    CheckError();
+
+    glUniform3fv(glGetUniformLocation(shaderProgram, "LightRGB3"), 1, lightObj3.rgb);
+    glUniform1f(glGetUniformLocation(shaderProgram, "LightBrightness3"), lightObj3.brightness);
+    glUniform1f(glGetUniformLocation(shaderProgram, "LightCutOff"), cos(30.0f * (M_PI / 180)));
 
     for (int i = 0; i < nObjects; i++)
     {
@@ -620,6 +642,38 @@ static void lightMenu(int id)
     }
 }
 
+// Part J35: Add 3rd Light
+static void adjustSpotlightAngleYX(vec2 angle_yx)
+{
+    sceneObjs[toolObj].angles[1] += angle_yx[0];
+    sceneObjs[toolObj].angles[0] += angle_yx[1];
+}
+static void adjustSpotlightAngleZ(vec2 az_ts)
+{
+    sceneObjs[toolObj].angles[2] += az_ts[0];
+}
+static void spotlightMenu(int id)
+{
+    deactivateTool();
+    if (id == 90)
+    {
+        toolObj = 3;
+        setToolCallbacks(adjustLocXZ, camRotZ(),
+                         adjustBrightnessY, mat2(1.0, 0.0, 0.0, 10.0));
+    }
+    else if (id >= 91 && id <= 94)
+    {
+        toolObj = 3;
+        setToolCallbacks(adjustSpotlightAngleYX, mat2(400, 0, 0, -400),
+                         adjustSpotlightAngleZ, mat2(400, 0, 0, 15));
+    }
+    else
+    {
+        printf("Error in lightMenu\n");
+        exit(1);
+    }
+}
+
 static int createArrayMenu(int size, const char menuEntries[][128], void (*menuFn)(int))
 {
     int nSubMenus = (size - 1) / 10 + 1;
@@ -699,7 +753,7 @@ static void mainmenu(int id)
 {
     deactivateTool();
 
-    // Part J14: Delete object
+    // Part J13: Delete object
     if (id == 30 && currObject >= 0)
         deleteObject();
 
@@ -743,6 +797,11 @@ static void makeMenu()
     glutAddMenuEntry("Move Light 2", 80);
     glutAddMenuEntry("R/G/B/All Light 2", 81);
 
+    // Part J35: Add 3rd Light
+    int spotlightMenuId = glutCreateMenu(spotlightMenu);
+    glutAddMenuEntry("Move Light 3", 90);
+    glutAddMenuEntry("Rotate Light 3", 91);
+
     glutCreateMenu(mainmenu);
     glutAddMenuEntry("Rotate/Move Camera", 50);
     glutAddSubMenu("Add object", objectId);
@@ -750,7 +809,7 @@ static void makeMenu()
     // Part J14: Add delete button to menu
     glutAddMenuEntry("Delete object", 30);
 
-    // Part J14: Add delete button to menu
+    // Part J23: Add duplicate button to menu
     glutAddMenuEntry("Duplicate object", 31);
 
     glutAddMenuEntry("Position/Scale", 41);
@@ -759,6 +818,10 @@ static void makeMenu()
     glutAddSubMenu("Texture", texMenuId);
     glutAddSubMenu("Ground Texture", groundMenuId);
     glutAddSubMenu("Lights", lightMenuId);
+
+    // Part J36: Add 3rd Light
+    glutAddSubMenu("Spotlight", spotlightMenuId);
+
     glutAddMenuEntry("EXIT", 99);
     glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
