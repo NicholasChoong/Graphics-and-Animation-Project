@@ -18,7 +18,6 @@ void main()
     // Transform vertex position into eye coordinates
     pos = (ModelView * vpos).xyz;
 
-    // Part G2: Light per Fragment
     // Transform vertex normal into eye coordinates (assumes scaling
     // is uniform across dimensions)
     N = normalize( (ModelView*vec4(vNormal, 0.0)).xyz );
