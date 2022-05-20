@@ -32,7 +32,8 @@ GLuint shaderProgram;                 // The number identifying the GLSL shader 
 GLuint vPosition, vNormal, vTexCoord; // IDs for vshader input vars (from glGetAttribLocation)
 GLuint projectionU, modelViewU;       // IDs for uniform variables (from glGetUniformLocation)
 
-static float viewDist = 1.5;          // Distance from the camera to the centre of the scene
+// static float viewDist = 1.5;          // Distance from the camera to the centre of the scene
+static float viewDist = 4;            // Distance from the camera to the centre of the scene
 static float camRotSidewaysDeg = 0;   // rotates the camera sideways around the centre
 static float camRotUpAndOverDeg = 20; // rotates the camera up and over the centre.
 
@@ -309,7 +310,8 @@ static void addObject(int id)
     sceneObjs[nObjects].angles[2] = 0.0;
 
     sceneObjs[nObjects].meshId = id;
-    sceneObjs[nObjects].texId = rand() % numTextures;
+    // sceneObjs[nObjects].texId = rand() % numTextures;
+    sceneObjs[nObjects].texId = 0;
     sceneObjs[nObjects].texScale = 2.0;
 
     toolObj = currObject = nObjects++;
@@ -371,7 +373,15 @@ void init(void)
     sceneObjs[1].texId = 0;        // Plain texture
     sceneObjs[1].brightness = 0.2; // The light's brightness is 5 times this (below).
 
-    addObject(rand() % numMeshes); // A test mesh
+    // Part I2: Light 2
+    addObject(55); // Sphere for the first light
+    sceneObjs[2].loc = vec4(2.0, 1.0, -1.0, 1.0);
+    sceneObjs[2].scale = 0.1;
+    sceneObjs[2].texId = 0;        // Plain texture
+    sceneObjs[2].brightness = 0.2; // The light's brightness is 5 times this (below).
+
+    // addObject(rand() % numMeshes); // A test mesh
+    addObject(28); // A test mesh
 
     // We need to enable the depth test to discard fragments that
     // are behind previously drawn fragments for the same pixel.
@@ -445,16 +455,29 @@ void display(void)
 
     SceneObject lightObj1 = sceneObjs[1];
     vec4 lightPosition = view * lightObj1.loc;
-
-    glUniform4fv(glGetUniformLocation(shaderProgram, "LightPosition"),
+    glUniform4fv(glGetUniformLocation(shaderProgram, "LightPosition1"),
                  1, lightPosition);
     CheckError();
+
+    // Part I1: Light 2
+    SceneObject lightObj2 = sceneObjs[2];
+    vec4 lightPosition2 = view * lightObj2.loc;
+    glUniform4fv(glGetUniformLocation(shaderProgram, "LightPosition2"),
+                 1, lightPosition2);
+    CheckError();
+
+    glUniform3fv(glGetUniformLocation(shaderProgram, "LightRGB1"), 1, lightObj1.rgb);
+    glUniform1f(glGetUniformLocation(shaderProgram, "LightBrightness1"), lightObj1.brightness);
+
+    glUniform3fv(glGetUniformLocation(shaderProgram, "LightRGB2"), 1, lightObj2.rgb);
+    glUniform1f(glGetUniformLocation(shaderProgram, "LightBrightness2"), lightObj2.brightness);
 
     for (int i = 0; i < nObjects; i++)
     {
         SceneObject so = sceneObjs[i];
 
-        vec3 rgb = so.rgb * lightObj1.rgb * so.brightness * lightObj1.brightness * 2.0;
+        // vec3 rgb = so.rgb * lightObj1.rgb * so.brightness * lightObj1.brightness * 2.0;
+        vec3 rgb = so.rgb * so.brightness * 2.0;
         glUniform3fv(glGetUniformLocation(shaderProgram, "AmbientProduct"), 1, so.ambient * rgb);
         CheckError();
         glUniform3fv(glGetUniformLocation(shaderProgram, "DiffuseProduct"), 1, so.diffuse * rgb);
@@ -525,6 +548,20 @@ static void lightMenu(int id)
     else if (id >= 71 && id <= 74)
     {
         toolObj = 1;
+        setToolCallbacks(adjustRedGreen, mat2(1.0, 0, 0, 1.0),
+                         adjustBlueBrightness, mat2(1.0, 0, 0, 1.0));
+    }
+
+    // Part I3: Light 2
+    else if (id == 80)
+    {
+        toolObj = 2;
+        setToolCallbacks(adjustLocXZ, camRotZ(),
+                         adjustBrightnessY, mat2(1.0, 0.0, 0.0, 10.0));
+    }
+    else if (id >= 81 && id <= 84)
+    {
+        toolObj = 2;
         setToolCallbacks(adjustRedGreen, mat2(1.0, 0, 0, 1.0),
                          adjustBlueBrightness, mat2(1.0, 0, 0, 1.0));
     }
