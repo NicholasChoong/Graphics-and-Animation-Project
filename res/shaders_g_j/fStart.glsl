@@ -6,10 +6,11 @@ uniform sampler2D texture;
 // Part B2: Texture Scaling
 uniform float texScale;
 
-// Part G2: Light per Fragment
-varying vec3 pos;
-varying vec3 N;
+// Part G3: Light per Fragment
+varying vec3 position;
+varying vec3 normal;
 
+uniform mat4 ModelView;
 uniform vec3 AmbientProduct, DiffuseProduct, SpecularProduct;
 uniform float Shininess;
 
@@ -20,12 +21,16 @@ uniform float LightBrightness1, LightBrightness2;
 
 void main()
 {
-    // Part G3: Light per Fragment
+    // Part G4: Light per Fragment
     // The vector to the light from the vertex    
-    vec3 Lvec = LightPosition1.xyz - pos;
+    vec3 Lvec = LightPosition1.xyz - position;
+
+    // Transform vertex normal into eye coordinates (assumes scaling
+    // is uniform across dimensions)
+    vec3 N = normalize( (ModelView*vec4(normal, 0.0)).xyz );
 
     // Unit direction vectors for Blinn-Phong shading calculation
-    vec3 E = normalize( -pos );   // Direction to the eye/camera
+    vec3 E = normalize( -position );   // Direction to the eye/camera
 
     vec3 L1 = normalize( Lvec );   // Direction to the light source
     vec3 H1 = normalize( L1 + E );  // Halfway vector
