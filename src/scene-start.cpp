@@ -421,15 +421,15 @@ void init(void)
     sceneObjs[1].texId = 0;        // Plain texture
     sceneObjs[1].brightness = 0.2; // The light's brightness is 5 times this (below).
 
-    // Part I2: Light 2
-    addObject(55); // Sphere for the first light
+    // Part I1: Light 2
+    addObject(55); // Sphere for the second light
     sceneObjs[2].loc = vec4(2.0, 1.0, -1.0, 1.0);
     sceneObjs[2].scale = 0.1;
     sceneObjs[2].texId = 0;        // Plain texture
     sceneObjs[2].brightness = 0.2; // The light's brightness is 5 times this (below).
 
     // Part J32: Add 3rd Light
-    addObject(55); // Sphere for the first light
+    addObject(55); // Sphere for the third light
     sceneObjs[3].loc = vec4(-2.0, 1.0, -1.0, 1.0);
     sceneObjs[3].scale = 0.1;
     sceneObjs[3].texId = 0;        // Plain texture
@@ -468,7 +468,7 @@ void drawMesh(SceneObject sceneObj)
     // Set the model matrix - this should combine translation, rotation and scaling based on what's
     // in the sceneObj structure (see near the top of the program).
 
-    // Part B1: Object Rotate XYZ
+    // Part B: Object Rotate XYZ
     mat4 rotateXYZ = RotateZ(sceneObj.angles[2]) * RotateY(sceneObj.angles[1]) * RotateX(sceneObj.angles[0]);
     mat4 model = Translate(sceneObj.loc) * rotateXYZ * Scale(sceneObj.scale);
 
@@ -516,7 +516,7 @@ void display(void)
     glUniform3fv(glGetUniformLocation(shaderProgram, "LightRGB1"), 1, lightObj1.rgb);
     glUniform1f(glGetUniformLocation(shaderProgram, "LightBrightness1"), lightObj1.brightness);
 
-    // Part I1: Light 2
+    // Part I2: Light 2
     SceneObject lightObj2 = sceneObjs[2];
     vec4 lightPosition2 = view * lightObj2.loc;
     glUniform4fv(glGetUniformLocation(shaderProgram, "LightPosition2"),
@@ -533,7 +533,6 @@ void display(void)
                  1, lightPosition3);
     CheckError();
     vec4 lightDirection3 = view * RotateZ(sceneObjs[3].angles[2]) * RotateY(sceneObjs[3].angles[1]) * RotateX(sceneObjs[3].angles[0]) * vec4(0.0, 1.0, 0.0, 0.0);
-    // vec4 lightDirection3 = view * vec4(0.2f, 1.0f, 0.3f, 0.0f);
     glUniform4fv(glGetUniformLocation(shaderProgram, "LightDirection3"),
                  1, lightDirection3);
     CheckError();
@@ -931,7 +930,7 @@ void reshape(int width, int height)
     //         that the same part of the scene is visible across the width of
     //         the window.
 
-    // Part D: Close up, scaled down by 0.01, 0.2 to 0.002
+    // Part D: Close up, scaled down from 0.2 to 0.002
     GLfloat nearDist = 0.002;
 
     // Part E: Reshape
