@@ -56,7 +56,7 @@ void main()
     }
 
     // Part I5: Light 2 
-    vec3 Lvec2 = LightPosition2.xyz - position;
+    vec3 Lvec2 = LightPosition2.xyz;
 
     vec3 L2 = normalize( Lvec2 );   // Direction to the light source
     vec3 H2 = normalize( L2 + E );  // Halfway vector
