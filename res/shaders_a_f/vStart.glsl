@@ -8,7 +8,9 @@ varying vec4 color;
 uniform vec3 AmbientProduct, DiffuseProduct, SpecularProduct;
 uniform mat4 ModelView;
 uniform mat4 Projection;
-uniform vec4 LightPosition;
+uniform vec4 LightPosition1;
+uniform vec3 LightRGB1;
+uniform float LightBrightness1;
 uniform float Shininess;
 
 void main()
@@ -20,7 +22,7 @@ void main()
 
 
     // The vector to the light from the vertex    
-    vec3 Lvec = LightPosition.xyz - pos;
+    vec3 Lvec = LightPosition1.xyz - pos;
 
     // Unit direction vectors for Blinn-Phong shading calculation
     vec3 L = normalize( Lvec );   // Direction to the light source
@@ -32,13 +34,13 @@ void main()
     vec3 N = normalize( (ModelView*vec4(vNormal, 0.0)).xyz );
 
     // Compute terms in the illumination equation
-    vec3 ambient = AmbientProduct;
+    vec3 ambient = AmbientProduct * LightRGB1 * LightBrightness1;
 
     float Kd = max( dot(L, N), 0.0 );
-    vec3  diffuse = Kd*DiffuseProduct;
+    vec3  diffuse = Kd*DiffuseProduct * LightRGB1 * LightBrightness1;
 
     float Ks = pow( max(dot(N, H), 0.0), Shininess );
-    vec3  specular = Ks * SpecularProduct;
+    vec3  specular = Ks * SpecularProduct * LightRGB1 * LightBrightness1;
     
     if (dot(L, N) < 0.0 ) {
 	    specular = vec3(0.0, 0.0, 0.0);
